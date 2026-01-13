@@ -14,6 +14,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -29,8 +31,7 @@ jobs:
           fi
 
       - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.VERSION }}
           name: BaoTa Plugins v${{ steps.version.outputs.VERSION }}
@@ -58,17 +59,7 @@ jobs:
 
             ### Author
             MissChina <391475293@qq.com>
-          files: |
-            plugins/*.zip
+          files: plugins/*.zip
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Output Download URLs
-        run: |
-          echo "## Plugin Download URLs" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          for plugin in bt_ssh_auth btwaf btwaf_httpd load_balance masterslave monitor msg_push mysql_replicate nfs_tools ossfs rsync syssafe tamper_core tamper_proof_refactored task_manager total wp_toolkit; do
-            echo "- https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.VERSION }}/${plugin}.zip" >> $GITHUB_STEP_SUMMARY
-          done
+          make_latest: true
