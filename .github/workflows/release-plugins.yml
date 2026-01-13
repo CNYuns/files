@@ -1,0 +1,74 @@
+name: Release BaoTa Plugins
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: BaoTa Plugins v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## BaoTa Panel Plugins (Modified by MissChina)
+
+            ### Included Plugins (17):
+            - bt_ssh_auth - SSH密钥认证
+            - btwaf - Nginx防火墙
+            - btwaf_httpd - Apache防火墙
+            - load_balance - 负载均衡
+            - masterslave - 主从复制
+            - monitor - 堡塔监控
+            - msg_push - 消息推送
+            - mysql_replicate - MySQL同步
+            - nfs_tools - NFS工具
+            - ossfs - 对象存储
+            - rsync - 文件同步
+            - syssafe - 系统安全
+            - tamper_core - 防篡改核心
+            - tamper_proof_refactored - 防篡改重构版
+            - task_manager - 任务管理
+            - total - 网站统计
+            - wp_toolkit - WordPress工具
+
+            ### Author
+            MissChina <391475293@qq.com>
+          files: |
+            plugins/*.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output Download URLs
+        run: |
+          echo "## Plugin Download URLs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for plugin in bt_ssh_auth btwaf btwaf_httpd load_balance masterslave monitor msg_push mysql_replicate nfs_tools ossfs rsync syssafe tamper_core tamper_proof_refactored task_manager total wp_toolkit; do
+            echo "- https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.VERSION }}/${plugin}.zip" >> $GITHUB_STEP_SUMMARY
+          done
